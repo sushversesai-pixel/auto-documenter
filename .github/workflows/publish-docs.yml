@@ -19,7 +19,7 @@ jobs:
 
       - name: Install Dependencies
         run: |
-          pip install "typer[all]" google-generativeai mkdocs mkdocs-material
+          pip install "typer[all]" google-generativeai mkdocs mkdocs-material python-dotenv
 
       - name: Generate Documentation
         run: python -m src.main generate src --output-dir docs
