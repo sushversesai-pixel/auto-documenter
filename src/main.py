@@ -90,7 +90,7 @@ nav:
     config_path.write_text(mkdocs_config, encoding="utf-8")
     
     print("Building documentation site with MkDocs...")
-    subprocess.run(["mkdocs", "build"], check=True, shell=True)
+    subprocess.run(["mkdocs", "build", "--verbose"], check=True, shell=True)
     print("✔️ Site built successfully in the 'site' directory!")
 
 if __name__ == "__main__":
