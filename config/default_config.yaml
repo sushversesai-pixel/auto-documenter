@@ -1,0 +1,125 @@
+# Code Auto-Documenter Configuration
+
+# OpenAI Configuration
+openai:
+  # the newest OpenAI model is "gpt-5" which was released August 7, 2025.
+  # do not change this unless explicitly requested by the user
+  model: "gpt-5"
+  max_tokens: 1000
+  temperature: 0.3
+  timeout: 30
+
+# Documentation Style Settings
+documentation:
+  default_style: "google"
+  
+  styles:
+    google:
+      enabled: true
+      description: "Google-style docstrings"
+    
+    numpy:
+      enabled: true
+      description: "NumPy-style docstrings"
+    
+    sphinx:
+      enabled: true
+      description: "Sphinx-style docstrings"
+    
+    jsdoc:
+      enabled: true
+      description: "JSDoc-style documentation"
+
+# Language Support
+languages:
+  python:
+    enabled: true
+    extensions: [".py"]
+    default_style: "google"
+    
+  javascript:
+    enabled: true
+    extensions: [".js", ".jsx"]
+    default_style: "jsdoc"
+    
+  typescript:
+    enabled: true
+    extensions: [".ts", ".tsx"]
+    default_style: "jsdoc"
+
+# Output Configuration
+output:
+  formats:
+    markdown:
+      enabled: true
+      extension: ".md"
+      
+    html:
+      enabled: false
+      extension: ".html"
+      
+  directory_structure:
+    create_language_dirs: true
+    create_api_reference: true
+    create_module_readmes: true
+
+# File Processing
+processing:
+  ignore_patterns:
+    directories:
+      - "__pycache__"
+      - ".git"
+      - "node_modules"
+      - ".vscode"
+      - ".idea"
+      - "build"
+      - "dist"
+      - "venv"
+      - "env"
+      
+    files:
+      - "*.pyc"
+      - "*.pyo"
+      - "*.min.js"
+      - "*.bundle.js"
+      - ".DS_Store"
+      - "Thumbs.db"
+      
+  max_file_size: 1048576  # 1MB in bytes
+  
+  include_private_members: false
+  include_test_files: false
+
+# Git Integration
+git:
+  auto_commit: false
+  commit_message: "docs: Auto-update documentation"
+  
+  hooks:
+    pre_commit:
+      enabled: true
+      run_on_staged_files_only: true
+      
+# AI Generation Settings
+ai_generation:
+  include_examples: true
+  include_error_handling: true
+  generate_usage_examples: true
+  
+  validation:
+    check_for_hallucinations: true
+    validate_code_examples: false
+    
+  retry_on_failure: true
+  max_retries: 3
+
+# Logging
+logging:
+  level: "INFO"
+  format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+  
+# Performance
+performance:
+  max_concurrent_files: 5
+  cache_ai_responses: false
+  batch_size: 10

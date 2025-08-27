@@ -1,2 +1,31 @@
+modules = ["python-3.11"]
 [agent]
 expertMode = true
+integrations = ["python_openai==1.0.0"]
+
+[nix]
+channel = "stable-25_05"
+packages = ["libyaml"]
+
+[workflows]
+runButton = "Project"
+
+[[workflows.workflow]]
+name = "Project"
+mode = "parallel"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "workflow.run"
+args = "Code Auto-Documenter CLI"
+
+[[workflows.workflow]]
+name = "Code Auto-Documenter CLI"
+author = "agent"
+
+[[workflows.workflow.tasks]]
+task = "shell.exec"
+args = "pip install click pyyaml jinja2 && python main.py --help"
+
+[workflows.workflow.metadata]
+outputType = "console"
