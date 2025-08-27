@@ -1,5 +1,4 @@
 # src/main.py
-# Version 1.1 of the main script
 import typer
 import ast
 import subprocess
@@ -22,6 +21,7 @@ def generate(
     if target_path.is_file() and target_path.suffix == '.py':
         files_to_process = [target_path]
     elif target_path.is_dir():
+        # --- THIS LINE IS NOW CORRECTED ---
         files_to_process = list(target_path.rglob("*.py"))
     else:
         print(f"Error: Invalid target path '{target_path}'. Please provide a Python file or a directory.")
@@ -82,9 +82,7 @@ def publish(
 ):
     """Builds the MkDocs site from the generated documentation."""
     
-    # --- NEW ROBUST LOGIC ---
     site_url = ""
-    # GITHUB_REPOSITORY is an environment variable available in GitHub Actions
     repo_slug = os.getenv("GITHUB_REPOSITORY")
     if repo_slug:
         owner, repo_name = repo_slug.split('/')
