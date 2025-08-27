@@ -20,7 +20,7 @@ def generate(
     if target_path.is_file() and target_path.suffix == '.py':
         files_to_process = [target_path]
     elif target_path.is_dir():
-        files_to_process = list(target_path.rglob("py"))
+        files_to_process = list(target_path.rglob("*.py"))
     else:
         print(f"Error: Invalid target path '{target_path}'. Please provide a Python file or a directory.")
         raise typer.Exit(code=1)
@@ -105,16 +105,17 @@ theme:
     print("Building documentation site with MkDocs...")
     try:
         # This will now capture and print the error message from MkDocs
-        subprocess.run(
-            ["mkdocs", "build", "--verbose"], 
-            check=True, 
-            shell=True,
+        result = subprocess.run(
+            ["mkdocs", "build", "--verbose"],
+            check=True,
             capture_output=True,
             text=True
         )
+        print(result.stdout)
         print("✔️ Site built successfully in the 'site' directory!")
     except subprocess.CalledProcessError as e:
         print("❌ MkDocs build failed!")
+        print(f"   Return Code: {e.returncode}")
         print(f"   STDOUT: {e.stdout}")
         print(f"   STDERR: {e.stderr}")
         raise typer.Exit(code=1)
