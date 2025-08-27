@@ -1,10 +1,14 @@
+
 site_name: AI-Generated Documentation
+
 theme:
   name: material
 nav:
   - Home: index.md
   - Architecture: architecture.md
   - API Reference:
-      - Main CLI: main.md
-      - Parser: parser.md
+      - __init__: __init__.md
       - Generator: generator.md
+      - Main: main.md
+      - Parser: parser.md
+

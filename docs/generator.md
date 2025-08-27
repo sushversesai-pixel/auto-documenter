@@ -2,17 +2,27 @@
 
 ## Function: `generate_docstring`
 ```python
-```python
-"""Generates a docstring for a function or method using Gemini.
-
-Args:
-    symbol_info: A dictionary containing information about the function or method.  
-                 It must include the keys 'type' (specifying "function" or "method") and 'code_block' (containing the code to generate the docstring for).
-
-Returns:
-    A string containing the generated Google-style docstring, or an error message enclosed in triple quotes if generation fails.
-"""
-```
+"""Error generating docstring: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. [violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-1.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 50
+}
+, links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, retry_delay {
+  seconds: 20
+}
+]"""
 ```
 
 ## Function: `generate_module_readme`
@@ -21,26 +31,37 @@ Returns:
 """Generates a README summary for a Python module using Gemini.
 
 Args:
-    symbols: A list of dictionaries, where each dictionary represents a symbol (class or function) in the module and contains a 'name' key with the symbol's name as its value.
-    module_name: The name of the Python module.
+    symbols (list): A list of dictionaries, where each dictionary represents a symbol (class or function) in the module.  Each dictionary must contain a 'name' key with the symbol's name as its value.
+    module_name (str): The name of the Python module.
 
 Returns:
-    A string containing the generated README in Markdown format.  If an error occurs during generation, it returns a Markdown string indicating the error.
+    str: A Markdown-formatted README string summarizing the module.  Returns an error message if the README generation fails.
 """
 ```
 ```
 
 ## Function: `generate_architecture_diagram`
 ```python
-```
-Generates a Mermaid.js dependency diagram showing the dependencies of a given module.
-
-Args:
-    dependencies (set): A set of strings representing the module names that the given module depends on.
-    module_name (str): The name of the module for which to generate the diagram.
-
-Returns:
-    str: A string containing the Mermaid.js code for the dependency diagram,  preceded by a title and description.  Returns an empty string if the dependencies set is empty.
-```
+"""Error generating docstring: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://ai.google.dev/gemini-api/docs/rate-limits. [violations {
+  quota_metric: "generativelanguage.googleapis.com/generate_content_free_tier_requests"
+  quota_id: "GenerateRequestsPerDayPerProjectPerModel-FreeTier"
+  quota_dimensions {
+    key: "model"
+    value: "gemini-1.5-flash"
+  }
+  quota_dimensions {
+    key: "location"
+    value: "global"
+  }
+  quota_value: 50
+}
+, links {
+  description: "Learn more about Gemini API quotas"
+  url: "https://ai.google.dev/gemini-api/docs/rate-limits"
+}
+, retry_delay {
+  seconds: 18
+}
+]"""
 ```
 

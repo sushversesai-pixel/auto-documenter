@@ -4,13 +4,13 @@ This diagram shows the top-level dependencies of the `src` module.
 
 ```mermaid
 graph TD;
+    src --> typer;
     src --> subprocess;
-    src --> parser;
-    src --> generator;
+    src --> dotenv;
     src --> google;
     src --> os;
-    src --> dotenv;
     src --> ast;
+    src --> generator;
+    src --> parser;
     src --> pathlib;
-    src --> typer;
 
