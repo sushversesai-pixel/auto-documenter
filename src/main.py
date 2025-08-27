@@ -82,15 +82,9 @@ def publish(
 ):
     """Builds the MkDocs site from the generated documentation."""
     
-    site_url = ""
-    repo_slug = os.getenv("GITHUB_REPOSITORY")
-    if repo_slug:
-        owner, repo_name = repo_slug.split('/')
-        site_url = f"site_url: https://{owner}.github.io/{repo_name}/\n"
-
+    # Simpler, more direct nav generation
     nav_string = "nav:\n  - Home: index.md\n"
-    architecture_file = docs_dir / "architecture.md"
-    if architecture_file.exists():
+    if (docs_dir / "architecture.md").exists():
         nav_string += "  - Architecture: architecture.md\n"
 
     api_files = sorted([f.name for f in docs_dir.glob("*.md") if f.name not in ["index.md", "architecture.md"]])
@@ -102,7 +96,8 @@ def publish(
 
     mkdocs_config = f"""
 site_name: AI-Generated Documentation
-{site_url}
+# Using a relative URL path is often more robust for GitHub Pages
+site_url: /auto-documenter/
 theme:
   name: material
 {nav_string}
@@ -113,21 +108,10 @@ theme:
     
     print("Building documentation site with MkDocs...")
     try:
-        result = subprocess.run(
-            ["mkdocs", "build", "--verbose"],
-            check=True,
-            capture_output=True,
-            text=True
-        )
-        print(result.stdout)
-        print("✔️ Site built successfully in the 'site' directory!")
+        # Run the standard gh-deploy command which is designed for this
+        subprocess.run(["mkdocs", "gh-deploy", "--force"], check=True, shell=True)
+        print("✔️ Site built and deployed successfully!")
     except subprocess.CalledProcessError as e:
-        print("❌ MkDocs build failed!")
-        print(f"   Return Code: {e.returncode}")
-        print(f"   STDOUT: {e.stdout}")
+        print("❌ MkDocs deployment failed!")
         print(f"   STDERR: {e.stderr}")
         raise typer.Exit(code=1)
-
-
-if __name__ == "__main__":
-    app()
