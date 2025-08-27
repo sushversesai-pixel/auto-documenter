@@ -2,6 +2,7 @@
 import typer
 import ast
 import subprocess
+import os
 from pathlib import Path
 
 from .parser import CodeParser
@@ -80,6 +81,14 @@ def publish(
 ):
     """Builds the MkDocs site from the generated documentation."""
     
+    # --- NEW ROBUST LOGIC ---
+    site_url = ""
+    # GITHUB_REPOSITORY is an environment variable available in GitHub Actions
+    repo_slug = os.getenv("GITHUB_REPOSITORY")
+    if repo_slug:
+        owner, repo_name = repo_slug.split('/')
+        site_url = f"site_url: https://{owner}.github.io/{repo_name}/\n"
+
     nav_string = "nav:\n  - Home: index.md\n"
     architecture_file = docs_dir / "architecture.md"
     if architecture_file.exists():
@@ -94,6 +103,7 @@ def publish(
 
     mkdocs_config = f"""
 site_name: AI-Generated Documentation
+{site_url}
 theme:
   name: material
 {nav_string}
@@ -104,7 +114,6 @@ theme:
     
     print("Building documentation site with MkDocs...")
     try:
-        # This will now capture and print the error message from MkDocs
         result = subprocess.run(
             ["mkdocs", "build", "--verbose"],
             check=True,
