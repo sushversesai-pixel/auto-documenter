@@ -1,3 +1,4 @@
+# src/main.py
 import typer
 import ast
 import subprocess
@@ -19,7 +20,7 @@ def generate(
     if target_path.is_file() and target_path.suffix == '.py':
         files_to_process = [target_path]
     elif target_path.is_dir():
-        files_to_process = list(target_path.rglob("*.py"))
+        files_to_process = list(target_path.rglob("py"))
     else:
         print(f"Error: Invalid target path '{target_path}'. Please provide a Python file or a directory.")
         raise typer.Exit(code=1)
@@ -72,26 +73,52 @@ def generate(
             diagram_path.write_text(diagram_content, encoding="utf-8")
             print(f"✔️ Architecture diagram saved to {diagram_path}")
 
+
 @app.command()
 def publish(
     docs_dir: Path = typer.Option("docs", help="Directory containing the documentation files.")
 ):
     """Builds the MkDocs site from the generated documentation."""
+    
+    nav_string = "nav:\n  - Home: index.md\n"
+    architecture_file = docs_dir / "architecture.md"
+    if architecture_file.exists():
+        nav_string += "  - Architecture: architecture.md\n"
+
+    api_files = sorted([f.name for f in docs_dir.glob("*.md") if f.name not in ["index.md", "architecture.md"]])
+    if api_files:
+        nav_string += "  - API Reference:\n"
+        for md_file in api_files:
+            page_name = md_file.replace('.md', '').capitalize()
+            nav_string += f"      - {page_name}: {md_file}\n"
+
     mkdocs_config = f"""
 site_name: AI-Generated Documentation
 theme:
   name: material
-nav:
-  - Home: index.md
-  - Architecture: architecture.md
+{nav_string}
 """
     
     config_path = Path("mkdocs.yml")
     config_path.write_text(mkdocs_config, encoding="utf-8")
     
     print("Building documentation site with MkDocs...")
-    subprocess.run(["mkdocs", "build", "--verbose"], check=True, shell=True)
-    print("✔️ Site built successfully in the 'site' directory!")
+    try:
+        # This will now capture and print the error message from MkDocs
+        subprocess.run(
+            ["mkdocs", "build", "--verbose"], 
+            check=True, 
+            shell=True,
+            capture_output=True,
+            text=True
+        )
+        print("✔️ Site built successfully in the 'site' directory!")
+    except subprocess.CalledProcessError as e:
+        print("❌ MkDocs build failed!")
+        print(f"   STDOUT: {e.stdout}")
+        print(f"   STDERR: {e.stderr}")
+        raise typer.Exit(code=1)
+
 
 if __name__ == "__main__":
     app()
