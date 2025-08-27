@@ -1,2 +1,5 @@
+typer[all]
+google-generativeai
 mkdocs
 mkdocs-material
+python-dotenv
