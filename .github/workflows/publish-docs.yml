@@ -1,21 +1,24 @@
-name: Generate and Deploy Docs
+name: Deploy Documentation Website
 
 on:
   push:
     branches:
       - main
 
+permissions:
+  contents: write
+
 jobs:
-  build-and-deploy:
+  deploy:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Python
-        uses: actions/setup-python@v4
+        uses: actions/setup-python@v5
         with:
-          python-version: '3.10'
+          python-version: 3.10
 
       - name: Install Dependencies
         run: pip install -r requirements.txt
@@ -25,13 +28,6 @@ jobs:
         env:
           GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
 
-      # --- THIS IS THE MISSING STEP ---
-      - name: Build MkDocs Site
-        run: mkdocs build
-
-      - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v4
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-          # This now correctly points to the 'site' folder created by 'mkdocs build'
-          publish_dir: ./site
+      # This single, official command builds and deploys the site
+      - name: Deploy with MkDocs
+        run: mkdocs gh-deploy --force
