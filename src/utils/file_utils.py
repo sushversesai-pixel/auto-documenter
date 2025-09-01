@@ -42,9 +42,9 @@ class FileUtils:
             List of absolute paths to source files
         """
         source_files = []
-        root_path = Path(root_path).resolve()
+        root_path_obj = Path(root_path).resolve()
         
-        for file_path in self._walk_directory(root_path):
+        for file_path in self._walk_directory(root_path_obj):
             if file_path.suffix.lower() in [ext.lower() for ext in extensions]:
                 if not self._should_ignore_file(file_path):
                     source_files.append(str(file_path))
@@ -108,7 +108,7 @@ class FileUtils:
         """
         return dir_name in self.ignore_patterns['directories']
     
-    def build_directory_tree(self, root_path: str, extensions: List[str] = None) -> Dict:
+    def build_directory_tree(self, root_path: str, extensions: Optional[List[str]] = None) -> Dict:
         """
         Build a directory tree structure with file counts.
         
@@ -119,10 +119,10 @@ class FileUtils:
         Returns:
             Dictionary representing the directory tree
         """
-        root_path = Path(root_path).resolve()
+        root_path_obj = Path(root_path).resolve()
         tree = {
-            'name': root_path.name,
-            'path': str(root_path),
+            'name': root_path_obj.name,
+            'path': str(root_path_obj),
             'type': 'directory',
             'children': [],
             'file_count': 0
@@ -133,7 +133,7 @@ class FileUtils:
             extensions = ['.py', '.js', '.ts', '.jsx', '.tsx']
         
         # Build tree structure
-        self._build_tree_recursive(root_path, tree, extensions)
+        self._build_tree_recursive(root_path_obj, tree, extensions)
         
         return tree
     
@@ -155,7 +155,7 @@ class FileUtils:
             if self._should_ignore_file(item):
                 continue
             
-            if item.is_directory():
+            if item.is_dir():
                 if not self._should_ignore_directory(item.name):
                     child_node = {
                         'name': item.name,
@@ -258,9 +258,9 @@ class FileUtils:
         Returns:
             Path to backup directory if successful, None otherwise
         """
-        docs_path = Path(docs_path)
+        docs_path_obj = Path(docs_path)
         
-        if not docs_path.exists():
+        if not docs_path_obj.exists():
             return None
         
         try:
@@ -268,9 +268,9 @@ class FileUtils:
             import time
             
             timestamp = int(time.time())
-            backup_path = docs_path.parent / f"{docs_path.name}_backup_{timestamp}"
+            backup_path = docs_path_obj.parent / f"{docs_path_obj.name}_backup_{timestamp}"
             
-            shutil.copytree(docs_path, backup_path)
+            shutil.copytree(docs_path_obj, backup_path)
             return str(backup_path)
             
         except Exception as e:

@@ -74,7 +74,7 @@ class PythonParser:
     
     def _parse_module(self, tree: ast.AST, file_path: str) -> Optional[CodeModule]:
         """Extract module-level information."""
-        module_docstring = ast.get_docstring(tree)
+        module_docstring = ast.get_docstring(tree) if isinstance(tree, ast.Module) else None
         
         # Get module imports
         imports = []
@@ -125,10 +125,30 @@ class PythonParser:
     
     def _parse_async_function(self, node: ast.AsyncFunctionDef, source_code: str) -> Optional[CodeFunction]:
         """Extract async function information from AST node."""
-        func_element = self._parse_function(node, source_code)
-        if func_element:
-            func_element.is_async = True
-        return func_element
+        # Convert AsyncFunctionDef to FunctionDef attributes for parsing
+        try:
+            parameters = self._extract_parameters(node.args)
+            return_type = self._extract_return_type_async(node)
+            decorators = [self._get_decorator_name(dec) for dec in node.decorator_list]
+            
+            docstring = ast.get_docstring(node)
+            is_private = node.name.startswith('_')
+            
+            return CodeFunction(
+                name=node.name,
+                parameters=parameters,
+                return_type=return_type,
+                docstring=docstring,
+                decorators=decorators,
+                is_private=is_private,
+                line_number=node.lineno,
+                is_async=True,
+                file_path=self.current_file
+            )
+            
+        except Exception as e:
+            print(f"Error parsing async function {node.name}: {e}")
+            return None
     
     def _parse_class(self, node: ast.ClassDef, source_code: str) -> Optional[CodeClass]:
         """Extract class information from AST node."""
@@ -141,14 +161,18 @@ class PythonParser:
             for base in node.bases:
                 if isinstance(base, ast.Name):
                     base_classes.append(base.id)
-                elif isinstance(base, ast.Attribute):
+                elif isinstance(base, ast.Attribute) and isinstance(base.value, ast.Name):
                     base_classes.append(f"{base.value.id}.{base.attr}")
             
             # Get class methods
             methods = []
             for child in node.body:
-                if isinstance(child, (ast.FunctionDef, ast.AsyncFunctionDef)):
+                if isinstance(child, ast.FunctionDef):
                     method = self._parse_function(child, source_code)
+                    if method:
+                        methods.append(method)
+                elif isinstance(child, ast.AsyncFunctionDef):
+                    method = self._parse_async_function(child, source_code)
                     if method:
                         methods.append(method)
             
@@ -207,8 +231,10 @@ class PythonParser:
             if arg.annotation:
                 param_type = self._get_type_annotation(arg.annotation)
             
-            if i < len(args.kw_defaults) and args.kw_defaults[i]:
-                default_value = self._get_default_value(args.kw_defaults[i])
+            if i < len(args.kw_defaults) and args.kw_defaults[i] is not None:
+                default_val = args.kw_defaults[i]
+                if default_val is not None:
+                    default_value = self._get_default_value(default_val)
             
             parameters.append(CodeParameter(
                 name=arg.arg,
@@ -251,6 +277,12 @@ class PythonParser:
             return self._get_type_annotation(node.returns)
         return None
     
+    def _extract_return_type_async(self, node: ast.AsyncFunctionDef) -> Optional[str]:
+        """Extract return type annotation from async function."""
+        if node.returns:
+            return self._get_type_annotation(node.returns)
+        return None
+    
     def _get_type_annotation(self, annotation: ast.AST) -> str:
         """Convert type annotation AST to string."""
         try:
@@ -259,7 +291,10 @@ class PythonParser:
             elif isinstance(annotation, ast.Constant):
                 return repr(annotation.value)
             elif isinstance(annotation, ast.Attribute):
-                return f"{annotation.value.id}.{annotation.attr}"
+                if isinstance(annotation.value, ast.Name):
+                    return f"{annotation.value.id}.{annotation.attr}"
+                else:
+                    return f"object.{annotation.attr}"
             elif isinstance(annotation, ast.Subscript):
                 value = self._get_type_annotation(annotation.value)
                 slice_value = self._get_type_annotation(annotation.slice)
@@ -277,7 +312,10 @@ class PythonParser:
             elif isinstance(default, ast.Name):
                 return default.id
             elif isinstance(default, ast.Attribute):
-                return f"{default.value.id}.{default.attr}"
+                if isinstance(default.value, ast.Name):
+                    return f"{default.value.id}.{default.attr}"
+                else:
+                    return "object.attr"
             else:
                 return ast.unparse(default)
         except:
@@ -289,7 +327,10 @@ class PythonParser:
             if isinstance(decorator, ast.Name):
                 return decorator.id
             elif isinstance(decorator, ast.Attribute):
-                return f"{decorator.value.id}.{decorator.attr}"
+                if isinstance(decorator.value, ast.Name):
+                    return f"{decorator.value.id}.{decorator.attr}"
+                else:
+                    return "object.attr"
             elif isinstance(decorator, ast.Call):
                 return self._get_decorator_name(decorator.func)
             else:
@@ -316,7 +357,10 @@ class PythonParser:
                 for init_child in ast.walk(child):
                     if isinstance(init_child, ast.Assign):
                         for target in init_child.targets:
-                            if isinstance(target, ast.Attribute) and isinstance(target.value, ast.Name) and target.value.id == 'self':
+                            if (isinstance(target, ast.Attribute) and 
+                                isinstance(target.value, ast.Name) and 
+                                hasattr(target.value, 'id') and 
+                                target.value.id == 'self'):
                                 attributes.append(target.attr)
         
         return list(set(attributes))  # Remove duplicates

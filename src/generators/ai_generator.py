@@ -104,7 +104,10 @@ class AIGenerator:
                 temperature=self.temperature
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Empty response from OpenAI")
+            result = json.loads(content)
             
             # Add metadata
             result['element_type'] = 'function'
@@ -151,7 +154,10 @@ class AIGenerator:
                 temperature=self.temperature
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Empty response from OpenAI")
+            result = json.loads(content)
             result['element_type'] = 'class'
             result['language'] = language
             result['style'] = style
@@ -195,7 +201,10 @@ class AIGenerator:
                 temperature=self.temperature
             )
             
-            result = json.loads(response.choices[0].message.content)
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Empty response from OpenAI")
+            result = json.loads(content)
             result['element_type'] = 'module'
             result['language'] = language
             result['style'] = style
@@ -243,7 +252,10 @@ class AIGenerator:
                 temperature=0.4
             )
             
-            return response.choices[0].message.content
+            content = response.choices[0].message.content
+            if content is None:
+                raise ValueError("Empty response from OpenAI")
+            return content
             
         except Exception as e:
             print(f"AI generation failed for module README: {e}")

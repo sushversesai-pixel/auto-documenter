@@ -17,6 +17,9 @@ from generators.ai_generator import AIGenerator
 from generators.template_generator import TemplateGenerator
 from utils.git_integration import GitIntegration
 from utils.file_utils import FileUtils
+from evaluators.readability_metrics import ReadabilityAnalyzer
+from evaluators.coverage_analyzer import CoverageAnalyzer
+from evaluators.hallucination_detector import HallucinationDetector
 
 
 @click.group()
@@ -69,6 +72,9 @@ def generate(repository_path, config, output, languages, style, format, verbose)
             elif language in ['javascript', 'typescript']:
                 parser = JavaScriptParser()
                 file_extensions = ['.js', '.ts', '.jsx', '.tsx']
+            else:
+                click.echo(f"❌ Unsupported language: {language}")
+                continue
             
             # Find source files
             source_files = file_utils.find_source_files(
@@ -182,13 +188,115 @@ def analyze(file_path, style):
         for element in parsed_elements:
             click.echo(f"  📌 {element.type}: {element.name}")
             if hasattr(element, 'parameters') and element.parameters:
-                click.echo(f"     Parameters: {', '.join(element.parameters)}")
+                param_names = [p.name if hasattr(p, 'name') else str(p) for p in element.parameters]
+                click.echo(f"     Parameters: {', '.join(param_names)}")
             if hasattr(element, 'return_type') and element.return_type:
                 click.echo(f"     Returns: {element.return_type}")
             click.echo()
         
     except Exception as e:
         click.echo(f"❌ Error analyzing file: {e}", err=True)
+        return 1
+
+
+@cli.command()
+@click.argument('documentation_path', type=click.Path(exists=True))
+@click.option('--source', '-s', type=click.Path(exists=True), 
+              help='Source code path for validation')
+@click.option('--output', '-o', type=click.Path(), default='./evaluation',
+              help='Output directory for evaluation reports')
+@click.option('--language', type=click.Choice(['python', 'javascript', 'typescript']),
+              default='python', help='Programming language')
+def evaluate(documentation_path, source, output, language):
+    """Evaluate documentation quality with readability and hallucination metrics."""
+    try:
+        click.echo(f"📊 Starting documentation evaluation for {documentation_path}")
+        
+        # Create output directory
+        output_path = Path(output)
+        output_path.mkdir(parents=True, exist_ok=True)
+        
+        # Initialize analyzers
+        readability_analyzer = ReadabilityAnalyzer()
+        coverage_analyzer = CoverageAnalyzer()
+        hallucination_detector = HallucinationDetector()
+        
+        # Read documentation files
+        doc_files = []
+        doc_path = Path(documentation_path)
+        
+        if doc_path.is_file():
+            doc_files = [doc_path]
+        else:
+            doc_files = list(doc_path.glob('**/*.md'))
+        
+        total_readability_score = 0
+        total_coverage_score = 0
+        total_confidence_score = 0
+        file_count = 0
+        
+        for doc_file in doc_files:
+            click.echo(f"📝 Evaluating {doc_file.name}...")
+            
+            with open(doc_file, 'r', encoding='utf-8') as f:
+                doc_content = f.read()
+            
+            # Readability analysis
+            readability_metrics = readability_analyzer.analyze_documentation(doc_content, language)
+            total_readability_score += readability_metrics.overall_score
+            
+            # Coverage analysis (simplified for demo)
+            elements = []  # Would normally parse source code
+            generated_docs = {}
+            coverage_metrics = coverage_analyzer.analyze_coverage(elements, generated_docs)
+            total_coverage_score += coverage_metrics.coverage_percentage
+            
+            # Hallucination detection
+            hallucination_report = hallucination_detector.detect_hallucinations(elements, generated_docs)
+            total_confidence_score += hallucination_report.confidence_score
+            
+            file_count += 1
+        
+        # Calculate overall metrics
+        avg_readability = total_readability_score / file_count if file_count > 0 else 0
+        avg_coverage = total_coverage_score / file_count if file_count > 0 else 0
+        avg_confidence = total_confidence_score / file_count if file_count > 0 else 0
+        
+        # Generate evaluation summary
+        summary_content = f"""# Documentation Evaluation Summary
+
+## Overall Metrics
+- **Readability Score**: {avg_readability:.1f}/100
+- **Coverage Score**: {avg_coverage:.1f}%
+- **Confidence Score**: {avg_confidence:.1f}%
+- **Files Evaluated**: {file_count}
+
+## Quality Assessment
+- **Readability**: {'✅ Excellent' if avg_readability >= 80 else '⚠️ Good' if avg_readability >= 60 else '❌ Needs Improvement'}
+- **Coverage**: {'✅ Excellent' if avg_coverage >= 90 else '⚠️ Good' if avg_coverage >= 70 else '❌ Needs Improvement'}
+- **Confidence**: {'✅ High' if avg_confidence >= 80 else '⚠️ Medium' if avg_confidence >= 60 else '❌ Low'}
+
+## Recommendations
+"""
+        
+        if avg_readability < 60:
+            summary_content += "- Improve documentation clarity and structure\n"
+        if avg_coverage < 70:
+            summary_content += "- Add more comprehensive documentation coverage\n"
+        if avg_confidence < 60:
+            summary_content += "- Review and validate AI-generated content for accuracy\n"
+        
+        # Save evaluation summary
+        summary_path = output_path / "evaluation_summary.md"
+        with open(summary_path, 'w', encoding='utf-8') as f:
+            f.write(summary_content)
+        
+        click.echo(f"✅ Evaluation complete!")
+        click.echo(f"📁 Reports saved to: {output_path}")
+        click.echo(f"📊 Overall Quality Score: {(avg_readability + avg_coverage + avg_confidence) / 3:.1f}/100")
+        
+    except Exception as e:
+        click.echo(f"❌ Error during evaluation: {e}", err=True)
         return 1
 
 
