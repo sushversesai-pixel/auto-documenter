@@ -1,0 +1,33 @@
+name: Deploy Documentation Website
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: 3.13
+
+      - name: Install Dependencies
+        run: pip install -r requirements.txt
+
+      - name: Generate Documentation Files
+        run: python -m src.main generate src --output-dir docs
+        env:
+          GOOGLE_API_KEY: ${{ secrets.GOOGLE_API_KEY }}
+
+      # This single, official command builds and deploys the site
+      - name: Deploy with MkDocs
+        run: mkdocs gh-deploy --force
