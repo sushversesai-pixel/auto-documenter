@@ -1,0 +1,11 @@
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Replit/Agent state
+.local/
+.replit
+.upm/
+
+# Docs
+site/

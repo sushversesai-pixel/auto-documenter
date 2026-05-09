@@ -1,4 +1,4 @@
-# Auto Documenter
+# Welcome to Auto Documenter
 
 An intelligent Python-based documentation generation system that automatically creates, organizes, and deploys comprehensive documentation for your projects. Auto Documenter uses MkDocs to generate beautiful static documentation websites and deploys them to GitHub Pages with a single push.
 
@@ -13,44 +13,3 @@ An intelligent Python-based documentation generation system that automatically c
 - **Custom Styling** - Easily customize colors and branding
 - **Version Control** - Track documentation changes alongside code
 - **CI/CD Integration** - Automated builds and deployments via GitHub Actions
-
-## 📋 Requirements
-
-- Python 3.8 or higher
-- MkDocs and MkDocs Material theme
-- Git
-
-## 🛠️ Installation
-
-1. **Clone the repository:**
-   ```bash
-   git clone <repository-url>
-   cd code-auto-documenter
-   ```
-
-2. **Install Python dependencies:**
-   ```bash
-   pip install mkdocs mkdocs-material
-   ```
-
-## 🎯 Quick Start
-
-### Basic Usage
-
-Generate documentation for a project and serve it locally:
-
-```bash
-mkdocs serve
-```
-
-Build the static site:
-
-```bash
-mkdocs build
-```
-
-Deploy to GitHub pages:
-
-```bash
-mkdocs gh-deploy
-```
